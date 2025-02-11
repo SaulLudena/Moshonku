@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'product_sans';
+  src: url('../src/assets/fonts/Product Sans Regular.ttf');
+}
+@font-face {
+  font-family: 'product_sans_bold';
+  src: url('../src/assets/fonts/Product Sans Bold.ttf');
+}
+
+body {
+  font-family: 'product_sans', sans-serif;
+  background-color: #ebebeb;
+}
+
+.product_sans {
+  font-family: 'product_sans', sans-serif;
+}
+.product_sans_bold {
+  font-family: 'product_sans_bold', sans-serif;
+}
