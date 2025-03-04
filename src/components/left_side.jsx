@@ -3,7 +3,7 @@ export default function Left_side() {
     <div className=" col-span-5 grid pt-[27%] max-2xl:pt-[10%] max-2xl:mb-20 max-2xl:col-span-12">
       <div className="">
         <div className="grid gap-5 w-full max-2xl:justify-center  ">
-          <h1 className=" w-[85%] text-7xl font-bold tracking-[-3px] max-xl:text-5xl max-2xl:w-[80%] max-lg:text-3xl  max-lg:tracking-[-2px] border-2 border-black max-2xl:text-center">
+          <h1 className=" w-[85%] text-7xl font-bold tracking-[-3px] max-xl:text-5xl max-2xl:w-[80%] max-lg:text-3xl  max-lg:tracking-[-2px]  max-2xl:text-center">
             WHERE MELODIES BECOME MEMORIES
           </h1>
           <h3 className="text-xl max-xl:text-md max-lg:text-sm">

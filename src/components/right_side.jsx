@@ -1,84 +1,172 @@
-import { useState, useRef, useEffect } from 'react'
-import { IoMdCloudUpload } from 'react-icons/io'
-import ColorThief from 'colorthief'
-import { IoIosAddCircle } from 'react-icons/io'
-import { MdEdit } from 'react-icons/md'
-import { Dialog, DialogPanel } from '@headlessui/react'
-import { FaDeleteLeft } from 'react-icons/fa6'
-import { FaCheckCircle } from 'react-icons/fa'
+import { useState, useRef, useEffect } from "react";
+import { IoMdCloudUpload } from "react-icons/io";
+import ColorThief from "colorthief";
+import { IoIosAddCircle } from "react-icons/io";
+import { MdEdit } from "react-icons/md";
+import { Dialog, DialogPanel } from "@headlessui/react";
+import { FaCheckCircle, FaEye, FaTrash } from "react-icons/fa";
+
 export default function Right_side() {
-  const [image, setImage] = useState(null)
-  const [imageURL, setImageURL] = useState(null)
-  const [colors, setColors] = useState([])
-  const imgRef = useRef(null)
-  const [songs, setSongs] = useState([])
-  const [newSong, setNewSong] = useState('')
-  let [isOpen, setIsOpen] = useState(true)
+  const [image, setImage] = useState(null);
+  const [imageURL, setImageURL] = useState(null);
+  const [colors, setColors] = useState([]);
+  const imgRef = useRef(null);
+  const [songs, setSongs] = useState([
+    { title: "Song title 1", isHide: false },
+    { title: "Song title 2", isHide: false },
+    { title: "Song title 3", isHide: false },
+    { title: "Song title 4", isHide: false },
+    { title: "Song title 5", isHide: false },
+    { title: "Song title 6", isHide: false },
+    { title: "Song title 7", isHide: false },
+    { title: "Song title 8", isHide: false },
+    { title: "Song title 9", isHide: false },
+    { title: "Song title 10", isHide: false },
+  ]);
+  const [musicGenders, setMusicGenders] = useState([
+    { title: "Gender 1", isHide: false },
+    { title: "Gender 2", isHide: false },
+    { title: "Gender 2", isHide: false },
+  ]);
+  const [designInfo, setDesignInfo] = useState({
+    image_url: "",
+    top_songs: [],
+    colors: [],
+    music_genders: [],
+    production_year: "",
+    produced_by: "",
+    band_name: "",
+    album_name: "",
+  });
+  const [selectedDelete, setSelectedDelete] = useState([]);
+  const [selectedDeleteMusicGender, setSelectedDeleteMusicGender] = useState(
+    []
+  );
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenMusicGender, setIsOpenMusicGender] = useState(false);
+
+  const toggleSelectionDelete = (index) => {
+    setSelectedDelete((prev) => {
+      if (prev.includes(index)) {
+        // Si ya está seleccionado, lo quitamos
+        return prev.filter((i) => i !== index);
+      } else {
+        // Si no está seleccionado, lo agregamos
+        return [...prev, index];
+      }
+    });
+  };
+  const toggleHide = (index) => {
+    setSongs((prevSongs) => {
+      const updatedSongs = prevSongs.map((song, i) =>
+        i === index ? { ...song, isHide: !song.isHide } : song
+      );
+
+      // También actualizamos `designInfo`
+      setDesignInfo((prevDesignInfo) => ({
+        ...prevDesignInfo,
+        top_songs: updatedSongs,
+      }));
+
+      return updatedSongs;
+    });
+  };
+  const toggleHideMusicGender = (index) => {
+    setMusicGenders((prevMusicGenders) => {
+      const updatedMusicGenders = prevMusicGenders.map((song, i) =>
+        i === index ? { ...song, isHide: !song.isHide } : song
+      );
+
+      // También actualizamos `designInfo`
+      setDesignInfo((prevDesignInfo) => ({
+        ...prevDesignInfo,
+        music_genders: updatedMusicGenders,
+      }));
+
+      return updatedMusicGenders;
+    });
+  };
+  const toggleSelectionDeleteMusicGender = (index) => {
+    setSelectedDeleteMusicGender((prev) => {
+      if (prev.includes(index)) {
+        // Si ya está seleccionado, lo quitamos
+        return prev.filter((i) => i !== index);
+      } else {
+        // Si no está seleccionado, lo agregamos
+        return [...prev, index];
+      }
+    });
+  };
   useEffect(() => {
     if (imageURL) {
-      const img = imgRef.current
-      img.crossOrigin = 'anonymous'
+      const img = imgRef.current;
+      img.crossOrigin = "anonymous";
       img.onload = () => {
-        const colorThief = new ColorThief()
-        let extractedColors = colorThief.getPalette(img, 5)
+        const colorThief = new ColorThief();
+        let extractedColors = colorThief.getPalette(img, 5);
         extractedColors = extractedColors.sort((a, b) => {
           const contrast = (color) => {
             const luminance =
-              (0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]) / 255
-            return Math.abs(1 - luminance) // Contraste con fondo blanco
-          }
-          return contrast(b) - contrast(a) // Ordena de mayor a menor contraste
-        })
-        setColors(extractedColors)
-      }
+              (0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]) / 255;
+            return Math.abs(1 - luminance);
+          };
+          return contrast(b) - contrast(a);
+        });
+        setColors(extractedColors);
+        setDesignInfo({
+          ...designInfo,
+          colors: extractedColors,
+        });
+      };
     }
-  }, [imageURL])
+    setDesignInfo({
+      ...designInfo,
+      top_songs: songs,
+    });
+  }, [imageURL]);
+
   function open() {
-    setIsOpen(true)
+    setIsOpen(true);
   }
 
   function close() {
-    setIsOpen(false)
+    setIsOpen(false);
   }
+
+  const openMusicGenders = () => {
+    setIsOpenMusicGender(true);
+  };
+  const closeMusicGenders = () => {
+    setIsOpenMusicGender(false);
+  };
+
   const handleImage = (e) => {
-    const image = e.target.files[0]
+    const image = e.target.files[0];
 
     // Verificar que el archivo sea una imagen
-    if (image && image.type.startsWith('image/')) {
-      setImage(image)
-      const imageURL = URL.createObjectURL(image)
-      setImageURL(imageURL)
-      console.log('Imagen cargada correctamente')
+    if (image && image.type.startsWith("image/")) {
+      setImage(image);
+      const imageURL = URL.createObjectURL(image);
+      setImageURL(imageURL);
+      console.log("Imagen cargada correctamente");
+      setDesignInfo({
+        ...designInfo,
+        image_url: imageURL,
+      });
     } else {
-      console.log('Por favor, selecciona un archivo de imagen válido')
+      console.log("Por favor, selecciona un archivo de imagen válido");
     }
-  }
+  };
 
-  const addSong = () => {
-    if (newSong.trim()) {
-      setSongs([...songs, newSong])
-      setNewSong('')
-    }
-  }
-
-  const editSong = (index, newTitle) => {
-    const updatedSongs = [...songs]
-    updatedSongs[index] = newTitle
-    setSongs(updatedSongs)
-  }
-
-  const deleteSong = (index) => {
-    setSongs(songs.filter((_, i) => i !== index))
-  }
   return (
     <>
       <Dialog
-        open={isOpen}
+        open={isOpenMusicGender}
         as="div"
         className="relative z-10 focus:outline-none bg-black"
-        onClose={close}
+        onClose={closeMusicGenders}
       >
-        <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-[#353535d2]">
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-[#353535d4]">
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel
               transition
@@ -86,44 +174,154 @@ export default function Right_side() {
             >
               <div className="grid grid-cols-12">
                 <div className=" col-span-12">
-                  <h1 className="text-5xl font-bold tracking-[-2px]">
-                    TOP SONGS
+                  <h1 className="text-7xl font-bold tracking-[-2px]">
+                    MUSIC GENDERS
                   </h1>
                 </div>
                 <div className=" col-span-8">
-                  <ol className="list-decimal mt-10 px-7 text-2xl text-left ">
-                    <li className="hover:font-bold flex items-center gap-5">
-                      <span>Song title 1 </span>
-                      <div className="flex gap-2">
-                        <div className="p-3 rounded-full bg-[#BDB75F] text-[#1C1C1C]">
-                          <MdEdit />
-                        </div>
-                        <div className="p-3 rounded-full bg-[#BD5F5F] text-[#EBEBEB]">
-                          <FaDeleteLeft />
-                        </div>
-                      </div>
-                    </li>
+                  <ol className="list-decimal mt-10 text-2xl text-left gap-2 grid">
+                    {musicGenders.map((song, index) => {
+                      return (
+                        <li
+                          className="hover:font-medium flex items-center gap-10 "
+                          key={index}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="text"
+                              value={song.title}
+                              disabled={
+                                selectedDeleteMusicGender.includes(index)
+                                  ? true
+                                  : false
+                              }
+                              maxLength={40}
+                              className={`${
+                                selectedDeleteMusicGender.includes(index) &&
+                                "line-through opacity-40"
+                              } border-b-2 border-black text-2xl p-2 outline-none w-[30rem]`}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <span
+                              className="bg-[#eb6e95] rounded-full p-3 cursor-pointer text-lg"
+                              onClick={() => {
+                                toggleSelectionDelete(index);
+                                toggleHide(index);
+                              }}
+                            >
+                              {selectedDelete.includes(index) ? (
+                                <FaEye />
+                              ) : (
+                                <FaTrash />
+                              )}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ol>
                 </div>
-                <div className=" col-span-4 flex items-center justify-end">
+
+                <div className=" col-span-12 pt-10">
+                  {" "}
                   <div className="w-full justify-center text-center grid">
                     <div
-                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3"
-                      onClick={open}
+                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3 cursor-pointer"
+                      onClick={close}
                     >
-                      <span>Add songs</span>
+                      <span>Save</span>
                       <div className="text-2xl ">
-                        <IoIosAddCircle />
+                        <FaCheckCircle />
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+      <Dialog
+        open={isOpen}
+        as="div"
+        className="relative z-10 focus:outline-none bg-black"
+        onClose={close}
+      >
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-[#353535d4]">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <DialogPanel
+              transition
+              className="w-[50%] max-w-[1500px] m-auto bg-[#EBEBEB] p-10 max-xl:w-[100%] "
+            >
+              <div className="grid grid-cols-12">
+                <div className=" col-span-12">
+                  <h1 className="text-7xl font-bold tracking-[-2px]">
+                    TOP SONGS
+                  </h1>
+                </div>
+                <div className=" col-span-8">
+                  <ol className="list-decimal mt-10 text-2xl text-left gap-2 grid">
+                    {songs.map((song, index) => {
+                      return (
+                        <li
+                          className="hover:font-medium flex items-center gap-10 "
+                          key={index}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="text"
+                              value={song.title}
+                              onChange={(e) => {
+                                setSongs((prevSongs) => {
+                                  const newSongs = [...prevSongs];
+                                  newSongs[index].title = e.target.value;
+
+                                  setDesignInfo((prevDesignInfo) => ({
+                                    ...prevDesignInfo,
+                                    top_songs: newSongs,
+                                  }));
+
+                                  return newSongs;
+                                });
+                              }}
+                              disabled={
+                                selectedDelete.includes(index) ? true : false
+                              }
+                              maxLength={40}
+                              className={`${
+                                selectedDelete.includes(index) &&
+                                "line-through opacity-40"
+                              } border-b-2 border-black text-2xl p-2 outline-none w-[30rem]`}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <span
+                              className="bg-[#eb6e95] rounded-full p-3 cursor-pointer text-lg"
+                              onClick={() => {
+                                toggleSelectionDelete(index);
+                                toggleHide(index);
+                              }}
+                            >
+                              {selectedDelete.includes(index) ? (
+                                <FaEye />
+                              ) : (
+                                <FaTrash />
+                              )}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+
                 <div className=" col-span-12 pt-10">
-                  {' '}
+                  {" "}
                   <div className="w-full justify-center text-center grid">
                     <div
-                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3"
-                      onClick={open}
+                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3 cursor-pointer"
+                      onClick={close}
                     >
                       <span>Save</span>
                       <div className="text-2xl ">
@@ -145,7 +343,8 @@ export default function Right_side() {
                 <div className="transition duration-100 group-hover:bg-[#b5b4a6] h-[40rem] grid items-center justify-center text-center bg-[#E3E2D3] text-7xl">
                   <div className="flex flex-col justify-center items-center text-center text-[#585858]">
                     <IoMdCloudUpload />
-                    <h1 className="text-2xl">Select image</h1>
+                    <h1 className="text-2xl mb-1">Select image</h1>
+                    <h1 className="text-lg">500x500 Preferable</h1>
                   </div>
                 </div>
               ) : (
@@ -164,21 +363,21 @@ export default function Right_side() {
               />
             </div>
             <div className="grid grid-cols-12 mt-10 relative">
-              <div className="col-span-6  cursor-pointer">
+              <div className="col-span-7  cursor-pointer">
                 <h1 className="text-5xl font-bold tracking-[-2px]">
                   TOP SONGS
                 </h1>
                 <ol className="list-decimal mt-10 px-7 text-2xl text-left h-[20rem]">
-                  <li className="hover:font-bold"> Song title 1 </li>
-                  <li className="hover:font-bold"> Song title 2 </li>
-                  <li className="hover:font-bold"> Song title 3 </li>
-                  <li className="hover:font-bold"> Song title 4 </li>
-                  <li className="hover:font-bold"> Song title 5 </li>
-                  <li className="hover:font-bold"> Song title 6 </li>
-                  <li className="hover:font-bold"> Song title 7 </li>
-                  <li className="hover:font-bold"> Song title 8 </li>
-                  <li className="hover:font-bold"> Song title 9 </li>
-                  <li className="hover:font-bold"> Song title 10 </li>
+                  {
+                    //mostramos solos las canciones que no estén ocultas
+                    songs
+                      .filter((song) => !song.isHide)
+                      .map((song, index) => (
+                        <li className="hover:font-bold" key={index}>
+                          {song.title}
+                        </li>
+                      ))
+                  }
 
                   <div className="absolute left-0 translate-y-4 ">
                     <div
@@ -193,7 +392,7 @@ export default function Right_side() {
                   </div>
                 </ol>
               </div>
-              <div className="col-span-6 flex flex-col gap-5">
+              <div className="col-span-5 flex flex-col gap-5">
                 <div className="grid justify-end">
                   <div className="flex gap-3">
                     {colors.length ? (
@@ -201,7 +400,7 @@ export default function Right_side() {
                         <div
                           key={index}
                           className="w-12 h-12"
-                          style={{ backgroundColor: `rgb(${color.join(',')})` }}
+                          style={{ backgroundColor: `rgb(${color.join(",")})` }}
                         ></div>
                       ))
                     ) : (
@@ -222,7 +421,12 @@ export default function Right_side() {
                     <span className="hover:font-bold"> Rock</span>
                   </div>
                   <div className="absolute right-0 translate-y-10 ">
-                    <div className="flex items-center gap-2 bg-[#E3E2D3] px-5 py-3">
+                    <div
+                      className="flex items-center gap-2 bg-[#E3E2D3] px-5 py-3"
+                      onClick={() => {
+                        openMusicGenders();
+                      }}
+                    >
                       <span>Edit gender</span>
                       <IoIosAddCircle />
                     </div>
@@ -264,5 +468,5 @@ export default function Right_side() {
         </div>
       </div>
     </>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-import MoshonkuLogo from '../../public/images/moshonku_logo.svg'
+import MoshonkuLogo from "../../public/images/moshonku_logo.svg";
 export default function Header() {
   return (
-    <div className="h-[15vh] py-5 pt-5">
+    <div className="h-[20vh] py-5 pt-5  grid items-center">
       <img
         src={MoshonkuLogo}
         alt={MoshonkuLogo}
-        className="w-32 max-2xl:w-24"
+        className="w-24 max-2xl:w-24"
       />
     </div>
-  )
+  );
 }
