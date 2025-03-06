@@ -5,6 +5,7 @@ import { IoIosAddCircle } from "react-icons/io";
 import { MdEdit } from "react-icons/md";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { FaCheckCircle, FaEye, FaTrash } from "react-icons/fa";
+import html2canvas from "html2canvas";
 
 export default function Right_side() {
   const [image, setImage] = useState(null);
@@ -44,7 +45,19 @@ export default function Right_side() {
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenMusicGender, setIsOpenMusicGender] = useState(false);
+  const [isOpenInfoBand, setIsOpenInfoBand] = useState(false);
 
+  const handleDownload = async () => {
+    const element = document.getElementById("poster-preview");
+    if (!element) return;
+    const canvas = await html2canvas(element, { backgroundColor: "#FFFFFF" });
+    const image = canvas.toDaraURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "poster.png";
+    link.click();
+  };
+  //Funciones para el delete y ocultar
   const toggleSelectionDelete = (index) => {
     setSelectedDelete((prev) => {
       if (prev.includes(index)) {
@@ -71,13 +84,12 @@ export default function Right_side() {
       return updatedSongs;
     });
   };
+  //Funciones para el delete y ocultar de los generos musicales
   const toggleHideMusicGender = (index) => {
     setMusicGenders((prevMusicGenders) => {
       const updatedMusicGenders = prevMusicGenders.map((song, i) =>
         i === index ? { ...song, isHide: !song.isHide } : song
       );
-
-      // También actualizamos `designInfo`
       setDesignInfo((prevDesignInfo) => ({
         ...prevDesignInfo,
         music_genders: updatedMusicGenders,
@@ -127,6 +139,7 @@ export default function Right_side() {
 
   function open() {
     setIsOpen(true);
+    console.log(designInfo);
   }
 
   function close() {
@@ -138,6 +151,13 @@ export default function Right_side() {
   };
   const closeMusicGenders = () => {
     setIsOpenMusicGender(false);
+  };
+
+  const openInfoBand = () => {
+    setIsOpenInfoBand(true);
+  };
+  const closeInfoBand = () => {
+    setIsOpenInfoBand(false);
   };
 
   const handleImage = (e) => {
@@ -180,7 +200,7 @@ export default function Right_side() {
                 </div>
                 <div className=" col-span-8">
                   <ol className="list-decimal mt-10 text-2xl text-left gap-2 grid">
-                    {musicGenders.map((song, index) => {
+                    {musicGenders.map((musicGender, index) => {
                       return (
                         <li
                           className="hover:font-medium flex items-center gap-10 "
@@ -189,7 +209,18 @@ export default function Right_side() {
                           <div className="flex items-center">
                             <input
                               type="text"
-                              value={song.title}
+                              value={musicGender.title}
+                              onChange={(e) => {
+                                setMusicGenders((prevMusicGenders) => {
+                                  const newMusicGenders = [...prevMusicGenders];
+                                  newMusicGenders[index].title = e.target.value;
+                                  setDesignInfo((prevDesignInfo) => ({
+                                    ...prevDesignInfo,
+                                    music_genders: newMusicGenders,
+                                  }));
+                                  return newMusicGenders;
+                                });
+                              }}
                               disabled={
                                 selectedDeleteMusicGender.includes(index)
                                   ? true
@@ -206,11 +237,11 @@ export default function Right_side() {
                             <span
                               className="bg-[#eb6e95] rounded-full p-3 cursor-pointer text-lg"
                               onClick={() => {
-                                toggleSelectionDelete(index);
-                                toggleHide(index);
+                                toggleSelectionDeleteMusicGender(index);
+                                toggleHideMusicGender(index);
                               }}
                             >
-                              {selectedDelete.includes(index) ? (
+                              {selectedDeleteMusicGender.includes(index) ? (
                                 <FaEye />
                               ) : (
                                 <FaTrash />
@@ -335,9 +366,122 @@ export default function Right_side() {
           </div>
         </div>
       </Dialog>
-      <div className=" col-span-6 h-full w-full max-2xl:col-span-12">
+      <Dialog
+        open={isOpenInfoBand}
+        as="div"
+        className="relative z-10 focus:outline-none bg-black"
+        onClose={closeInfoBand}
+      >
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-[#353535d4]">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <DialogPanel
+              transition
+              className="w-[50%] max-w-[1500px] m-auto bg-[#EBEBEB] p-10 max-xl:w-[100%] "
+            >
+              <div className="grid grid-cols-12">
+                <div className=" col-span-12">
+                  <h1 className="text-7xl font-bold tracking-[-2px]">
+                    INFO ABOUT ARTIST
+                  </h1>
+                </div>
+
+                <div className="grid gap-5 mt-10">
+                  <input
+                    type="text"
+                    className="border-b-2 border-black text-2xl p-2 outline-none w-[30rem]"
+                    placeholder="Production year"
+                    onChange={(e) => {
+                      setDesignInfo((prevDesignInfo) => ({
+                        ...prevDesignInfo,
+                        production_year: e.target.value,
+                      }));
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="border-b-2 border-black text-2xl p-2 outline-none w-[30rem]"
+                    placeholder="Produced by"
+                    onChange={(e) => {
+                      setDesignInfo((prevDesignInfo) => ({
+                        ...prevDesignInfo,
+                        produced_by: e.target.value,
+                      }));
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="border-b-2 border-black text-2xl p-2 outline-none w-[30rem]"
+                    placeholder="Band name"
+                    onChange={(e) => {
+                      setDesignInfo((prevDesignInfo) => ({
+                        ...prevDesignInfo,
+                        band_name: e.target.value,
+                      }));
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="border-b-2 border-black text-2xl p-2 outline-none w-[30rem]"
+                    placeholder="Album name"
+                    onChange={(e) => {
+                      setDesignInfo((prevDesignInfo) => ({
+                        ...prevDesignInfo,
+                        album_name: e.target.value,
+                      }));
+                    }}
+                  />
+                </div>
+                <div className=" col-span-12 pt-10">
+                  {" "}
+                  <div className="w-full justify-center text-center grid">
+                    <div
+                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3 cursor-pointer"
+                      onClick={closeInfoBand}
+                    >
+                      <span>Save</span>
+                      <div className="text-2xl ">
+                        <FaCheckCircle />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+      <div className=" col-span-5 grid pt-[27%] max-2xl:pt-[10%] max-2xl:mb-20 max-2xl:col-span-12">
+        <div className="">
+          <div className="grid gap-5 w-full max-2xl:justify-center  ">
+            <h1 className=" w-[85%] text-7xl font-bold tracking-[-3px] max-xl:text-5xl max-2xl:w-[80%] max-lg:text-3xl  max-lg:tracking-[-2px]  max-2xl:text-center">
+              WHERE MELODIES BECOME MEMORIES
+            </h1>
+            <h3 className="text-xl max-xl:text-md max-lg:text-sm">
+              Design your band’s visual tribute
+            </h3>
+
+            <div className="flex gap-5">
+              <div className="bg-[#C6C5B3] p-5 grid items-center justify-center max-lg:p-3 max-lg:text-xs ">
+                WATCH EXAMPLES
+              </div>
+              <div
+                className="bg-[#1C1C1C] p-5  grid items-center justify-center text-white max-lg:p-3 max-lg:text-xs "
+                onClick={() => {
+                  handleDownload();
+                }}
+              >
+                DOWNLOAD THIS
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className=" col-span-6 h-full w-full max-2xl:col-span-12 -translate-y-[10%] max-2xl:-translate-y-0">
         <div className=" w-full h-[90rem]">
-          <div className="border-8 border-[#353535] h-full bg-[#EFEEE5] p-10 ">
+          <div
+            className="border-8 border-[#353535] h-full bg-[#EFEEE5] p-10 "
+            id="poster-preview"
+          >
             <div className="relative group">
               {!imageURL ? (
                 <div className="transition duration-100 group-hover:bg-[#b5b4a6] h-[40rem] grid items-center justify-center text-center bg-[#E3E2D3] text-7xl">
@@ -381,12 +525,12 @@ export default function Right_side() {
 
                   <div className="absolute left-0 translate-y-4 ">
                     <div
-                      className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3"
+                      className="flex items-center gap-3 bg-[#d6d29b] px-5 py-3 text-[1rem]"
                       onClick={open}
                     >
-                      <span>Edit songs</span>
-                      <div className="bg-[#1C1C1C] text-[#E3E2D3] p-2 rounded-full ">
-                        <MdEdit />
+                      <span>Edit top songs</span>
+                      <div className=" text-[#000000] rounded-full ">
+                        <IoIosAddCircle />
                       </div>
                     </div>
                   </div>
@@ -416,18 +560,26 @@ export default function Right_side() {
                 </div>
                 <div className="text-right flex cursor-pointer relative ">
                   <div className="text-right w-full">
-                    <span className="hover:font-bold">Math Rock |</span>
-                    <span className="hover:font-bold"> Indie |</span>
-                    <span className="hover:font-bold"> Rock</span>
+                    {
+                      //mostramos solos los generos musicales que no estén ocultos
+                      musicGenders
+                        .filter((musicGender) => !musicGender.isHide)
+                        .map((musicGender, index) => (
+                          <li className="hover:font-bold inline" key={index}>
+                            {musicGender.title}
+                            {index < musicGenders.length - 1 && " | "}
+                          </li>
+                        ))
+                    }
                   </div>
                   <div className="absolute right-0 translate-y-10 ">
                     <div
-                      className="flex items-center gap-2 bg-[#E3E2D3] px-5 py-3"
+                      className="flex items-center gap-2 bg-[#d6d29b] px-5 py-3"
                       onClick={() => {
                         openMusicGenders();
                       }}
                     >
-                      <span>Edit gender</span>
+                      <span>Edit music genders</span>
                       <IoIosAddCircle />
                     </div>
                   </div>
@@ -436,28 +588,41 @@ export default function Right_side() {
               <div className="col-span-6 mt-30  grid relative ">
                 <div className="gap-5 flex flex-col ">
                   <div className="border-red-700 ">
-                    <p className="text-2xl">PRODUCTION YEAR</p>
-                    <p className="text-2xl">PRODUCED BY</p>
-                  </div>
-                </div>
-                <div className="absolute left-0 translate-y-20 ">
-                  <div className="flex items-center gap-2 bg-[#E3E2D3] px-5 py-3">
-                    <span>Edit info</span>
-                    <IoIosAddCircle />
+                    <p className="text-2xl">
+                      {designInfo.production_year.length === 0
+                        ? "Production year"
+                        : designInfo.production_year}
+                    </p>
+                    <p className="text-2xl">
+                      {designInfo.produced_by.length === 0
+                        ? "Produced by"
+                        : designInfo.produced_by}
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="col-span-6 mt-28 relative">
                 <div className="gap-5 flex flex-col">
                   <div className="text-right">
-                    <p className="text-2xl">Band</p>
+                    <p className="text-2xl">
+                      {designInfo.band_name.length === 0
+                        ? "Band name"
+                        : designInfo.band_name}
+                    </p>
                     <p className="text-5xl font-bold tracking-[-2px]">
-                      ALBUM NAME
+                      {designInfo.album_name.length === 0
+                        ? "Album name"
+                        : designInfo.album_name}
                     </p>
                   </div>
                 </div>
                 <div className="absolute right-0 -translate-y-35 ">
-                  <div className="flex items-center gap-2 bg-[#E3E2D3] px-5 py-3">
+                  <div
+                    className="flex items-center gap-2 bg-[#d6d29b] px-5 py-3 cursor-pointer"
+                    onClick={() => {
+                      openInfoBand();
+                    }}
+                  >
                     <span>Edit info</span>
                     <IoIosAddCircle />
                   </div>
