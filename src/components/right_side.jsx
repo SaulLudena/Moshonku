@@ -2,10 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { IoMdCloudUpload } from "react-icons/io";
 import ColorThief from "colorthief";
 import { IoIosAddCircle } from "react-icons/io";
-import { MdEdit } from "react-icons/md";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { FaCheckCircle, FaEye, FaTrash } from "react-icons/fa";
-import html2canvas from "html2canvas";
 
 export default function Right_side() {
   const [image, setImage] = useState(null);
@@ -47,16 +45,60 @@ export default function Right_side() {
   const [isOpenMusicGender, setIsOpenMusicGender] = useState(false);
   const [isOpenInfoBand, setIsOpenInfoBand] = useState(false);
 
-  const handleDownload = async () => {
-    const element = document.getElementById("poster-preview");
-    if (!element) return;
-    const canvas = await html2canvas(element, { backgroundColor: "#FFFFFF" });
-    const image = canvas.toDaraURL("image/png");
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = "poster.png";
-    link.click();
+  const generateImage = async () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const AlbumOrBandImage = new Image();
+    AlbumOrBandImage.src = designInfo.image_url;
+
+    canvas.width = 1080;
+    canvas.height = 1920;
+
+    return new Promise((resolve) => {
+      AlbumOrBandImage.onload = () => {
+        const imgWidth = 950;
+        const xPos = (canvas.width - imgWidth) / 2;
+
+        ctx.fillStyle = "#EFEEE5"; // Color de fondo
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 25; // Grosor del borde
+        ctx.strokeStyle = "#000000"; // Color negro
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(AlbumOrBandImage, xPos, 65, 950, 950);
+
+        // Texto top songs
+        ctx.font = "bold 60px product_sans";
+        ctx.fillStyle = "#000000"; // Color del texto
+        ctx.fillText("TOP SONGS", 70, 1125);
+
+        let yPos = 1200;
+        ctx.font = "35px product_sans";
+        ctx.fillStyle = "#000000"; // Color del texto
+        designInfo.top_songs.forEach((top_song, index) => {
+          ctx.fillText(
+            top_song.isHide ? "" : `${index + 1}. ${top_song.title}`,
+            75,
+            yPos
+          );
+          yPos += 48;
+        });
+
+        resolve(canvas.toDataURL());
+      };
+    });
   };
+
+  const handleDownload = async () => {
+    const imageUrl = await generateImage();
+
+    const a = document.createElement("a");
+    a.href = imageUrl;
+    a.download = "imagen_random.png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   //Funciones para el delete y ocultar
   const toggleSelectionDelete = (index) => {
     setSelectedDelete((prev) => {
@@ -197,6 +239,9 @@ export default function Right_side() {
                   <h1 className="text-7xl font-bold tracking-[-2px]">
                     MUSIC GENDERS
                   </h1>
+                  <h3 className="text-3xl mt-6">
+                    Write three music genders of your band
+                  </h3>
                 </div>
                 <div className=" col-span-8">
                   <ol className="list-decimal mt-10 text-2xl text-left gap-2 grid">
@@ -290,6 +335,9 @@ export default function Right_side() {
                   <h1 className="text-7xl font-bold tracking-[-2px]">
                     TOP SONGS
                   </h1>
+                  <h3 className="text-3xl mt-6">
+                    Write the top songs of your band
+                  </h3>
                 </div>
                 <div className=" col-span-8">
                   <ol className="list-decimal mt-10 text-2xl text-left gap-2 grid">
@@ -383,6 +431,7 @@ export default function Right_side() {
                   <h1 className="text-7xl font-bold tracking-[-2px]">
                     INFO ABOUT ARTIST
                   </h1>
+                  <h3 className="text-3xl mt-6">Write the info of your band</h3>
                 </div>
 
                 <div className="grid gap-5 mt-10">
@@ -396,6 +445,7 @@ export default function Right_side() {
                         production_year: e.target.value,
                       }));
                     }}
+                    value={designInfo.production_year}
                   />
                   <input
                     type="text"
@@ -407,6 +457,7 @@ export default function Right_side() {
                         produced_by: e.target.value,
                       }));
                     }}
+                    value={designInfo.produced_by}
                   />
                   <input
                     type="text"
@@ -418,6 +469,7 @@ export default function Right_side() {
                         band_name: e.target.value,
                       }));
                     }}
+                    value={designInfo.band_name}
                   />
                   <input
                     type="text"
@@ -429,6 +481,7 @@ export default function Right_side() {
                         album_name: e.target.value,
                       }));
                     }}
+                    value={designInfo.album_name}
                   />
                 </div>
                 <div className=" col-span-12 pt-10">
