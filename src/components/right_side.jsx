@@ -25,7 +25,7 @@ export default function Right_side() {
   const [musicGenders, setMusicGenders] = useState([
     { title: "Gender 1", isHide: false },
     { title: "Gender 2", isHide: false },
-    { title: "Gender 2", isHide: false },
+    { title: "Gender 3", isHide: false },
   ]);
   const [designInfo, setDesignInfo] = useState({
     image_url: "",
@@ -56,32 +56,173 @@ export default function Right_side() {
 
     return new Promise((resolve) => {
       AlbumOrBandImage.onload = () => {
-        const imgWidth = 950;
-        const xPos = (canvas.width - imgWidth) / 2;
+        const targetWidth = 950;
+        const targetHeight = 950;
+        const xPos = (canvas.width - targetWidth) / 2;
+        const yPos = 65;
 
-        ctx.fillStyle = "#EFEEE5"; // Color de fondo
+        // Obtener dimensiones originales
+        const imgWidth = AlbumOrBandImage.width;
+        const imgHeight = AlbumOrBandImage.height;
+        const imgRatio = imgWidth / imgHeight;
+        const targetRatio = targetWidth / targetHeight;
+
+        let cropWidth, cropHeight, cropX, cropY;
+
+        if (imgRatio > targetRatio) {
+          // Imagen más ancha que el área de destino: recortar lados
+          cropHeight = imgHeight;
+          cropWidth = imgHeight * targetRatio;
+          cropX = (imgWidth - cropWidth) / 2;
+          cropY = 0;
+        } else {
+          // Imagen más alta que el área de destino: recortar arriba/abajo
+          cropWidth = imgWidth;
+          cropHeight = imgWidth / targetRatio;
+          cropX = 0;
+          cropY = (imgHeight - cropHeight) / 2;
+        }
+
+        // Dibujar fondo y bordes
+        ctx.fillStyle = "#EFEEE5";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 25; // Grosor del borde
-        ctx.strokeStyle = "#000000"; // Color negro
+        ctx.lineWidth = 25;
+        ctx.strokeStyle = "#000000";
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(AlbumOrBandImage, xPos, 65, 950, 950);
 
-        // Texto top songs
+        // Dibujar imagen con recorte (efecto object-cover)
+        ctx.drawImage(
+          AlbumOrBandImage,
+          cropX,
+          cropY,
+          cropWidth,
+          cropHeight, // Recorte de la imagen original
+          xPos,
+          yPos,
+          targetWidth,
+          targetHeight // Ubicación y tamaño en el canvas
+        );
+
+        // Texto "TOP SONGS"
         ctx.font = "bold 60px product_sans";
-        ctx.fillStyle = "#000000"; // Color del texto
+        ctx.fillStyle = "#000000";
         ctx.fillText("TOP SONGS", 70, 1125);
 
-        let yPos = 1200;
+        // Dibujar lista de canciones
+        let textYPos = 1200;
         ctx.font = "35px product_sans";
-        ctx.fillStyle = "#000000"; // Color del texto
         designInfo.top_songs.forEach((top_song, index) => {
           ctx.fillText(
             top_song.isHide ? "" : `${index + 1}. ${top_song.title}`,
             75,
-            yPos
+            textYPos
           );
-          yPos += 48;
+          textYPos += 48;
         });
+
+        //dibujar los colores de manera horizontal
+        let colorYPos = 1075;
+        let colorXPos = 607;
+        designInfo.colors.forEach((color) => {
+          ctx.fillStyle = `rgb(${color.join(",")})`;
+          ctx.fillRect(colorXPos, colorYPos, 70, 70);
+          colorXPos += 85;
+        });
+
+        //dibujar "MUSIC GENDERS"
+
+        // Configurar la fuente y el color
+        ctx.font = "25px product_sans";
+        ctx.fillStyle = "#000000";
+
+        let xStart = 605; // Posición inicial en X donde debe comenzar el primer elemento
+        let xEnd = 950; // Límite derecho del área de texto
+        let y = 1200; // Posición en Y
+        let spacing = 20; // Espaciado base entre elementos
+
+        // Filtrar los elementos visibles (los que cumplen !isHide)
+        let visibleMusic = designInfo.music_genders.filter(
+          (music) => !music.isHide
+        );
+        let itemCount = visibleMusic.length;
+
+        // Si no hay elementos visibles, no hacemos nada
+        if (itemCount === 0) return;
+
+        // Calcular anchos individuales de los textos
+        let textWidths = visibleMusic.map(
+          (music) => ctx.measureText(music.title).width
+        );
+        let separatorWidth = ctx.measureText("|").width;
+
+        // Calcular el ancho total de los textos y separadores
+        let totalTextWidth = textWidths.reduce((sum, w) => sum + w, 0);
+        let totalSeparatorsWidth = (itemCount - 1) * separatorWidth;
+        let totalSpacing = (itemCount - 1) * spacing;
+        let totalWidth = totalTextWidth + totalSeparatorsWidth + totalSpacing;
+
+        // **Determinar la posición inicial (x)**
+        // Si el texto es más corto que el espacio disponible, lo centramos
+        // PERO el primer elemento siempre empieza en xStart
+        let x =
+          itemCount > 0 ? xStart : xStart + (xEnd - xStart - totalWidth) / 2;
+
+        visibleMusic.forEach((music, index) => {
+          let text = music.title;
+          let textWidth = textWidths[index];
+
+          // **Dibujar el primer elemento exactamente en xStart**
+          if (index === 0) {
+            x = xStart;
+          }
+
+          // Dibujar el texto
+          ctx.fillText(text, x, y);
+          x += textWidth + spacing;
+
+          // Dibujar separador centrado entre elementos (excepto después del último)
+          if (index < itemCount - 1) {
+            ctx.fillText("|", x - spacing / 2, y); // Centrado entre palabras
+            x += separatorWidth;
+          }
+        });
+
+        //dibujar info de la banda
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "bold 40px product_sans ";
+        ctx.fillText(
+          designInfo.production_year.length === 0
+            ? "Production year"
+            : designInfo.production_year,
+          75,
+          1750
+        );
+
+        ctx.font = "bold 40px product_sans";
+        ctx.fillText(
+          designInfo.produced_by.length === 0
+            ? "Produced by"
+            : designInfo.produced_by,
+          75,
+          1810
+        );
+        ctx.font = "bold 40px product_sans";
+        ctx.fillText(
+          designInfo.band_name.length === 0
+            ? "Band name"
+            : designInfo.band_name,
+          720,
+          1700
+        );
+        ctx.font = "bold 90px product_sans";
+        ctx.fillText(
+          designInfo.album_name.length === 0
+            ? "Album name"
+            : designInfo.album_name,
+          850,
+          1810
+        );
 
         resolve(canvas.toDataURL());
       };
@@ -176,6 +317,7 @@ export default function Right_side() {
     setDesignInfo({
       ...designInfo,
       top_songs: songs,
+      music_genders: musicGenders,
     });
   }, [imageURL]);
 
@@ -304,7 +446,7 @@ export default function Right_side() {
                   <div className="w-full justify-center text-center grid">
                     <div
                       className="flex items-center gap-3 bg-[#E3E2D3] px-5 py-3 cursor-pointer"
-                      onClick={close}
+                      onClick={closeMusicGenders}
                     >
                       <span>Save</span>
                       <div className="text-2xl ">
@@ -518,7 +660,7 @@ export default function Right_side() {
                 WATCH EXAMPLES
               </div>
               <div
-                className="bg-[#1C1C1C] p-5  grid items-center justify-center text-white max-lg:p-3 max-lg:text-xs "
+                className="bg-[#1C1C1C] p-5  grid items-center justify-center text-white max-lg:p-3 max-lg:text-xs cursor-pointer"
                 onClick={() => {
                   handleDownload();
                 }}
